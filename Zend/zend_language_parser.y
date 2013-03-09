@@ -815,7 +815,7 @@ expr_without_variable:
 	|	'`' backticks_expr '`' { zend_do_shell_exec(&$$, &$2 TSRMLS_CC); }
 	|	T_PRINT expr  { zend_do_print(&$$, &$2 TSRMLS_CC); }
 	|	T_YIELD { zend_do_yield(&$$, NULL, NULL, 0 TSRMLS_CC); }
-	| 	lambda_function { $$ = $1; }
+	| 	lambda_function { $$ = $1; $$.EA = 0; }
 ;
 
 yield_expr:
