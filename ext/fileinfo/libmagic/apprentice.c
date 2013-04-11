@@ -492,8 +492,15 @@ apprentice_unmap(struct magic_map *map)
 {
 	if (map == NULL)
 		return;
-	if (map->p != NULL && map->p != php_magic_database) {
-		efree(map->p);
+	if (map->p != php_magic_database) {
+		int j;
+		for (j = 0; j < MAGIC_SETS; j++) {
+			if (map->magic[j])
+				efree(map->magic[j]);
+		}
+		if (map->p != NULL) {
+			efree(map->p);
+		}
 	}
 	efree(map);
 }
@@ -1147,8 +1154,8 @@ apprentice_load(struct magic_set *ms, const char *fn, int action)
 
 	{
 		/* XXX the maxmagic has to be reset each time we load some new magic file.
-				Where file commando is used it's not essential as the CLI process
-				ends, multiple loading within the same process wouldn't work. */
+		Where file commando is used it's not essential as the CLI process
+		ends, multiple loading within the same process wouldn't work. */
 		int k;
 		for (k = 0; k < MAGIC_SETS; k++) {
 			maxmagic[k] = 0;
@@ -1156,8 +1163,8 @@ apprentice_load(struct magic_set *ms, const char *fn, int action)
 	}
 
 	/* load directory or file */
-        /* FIXME: Read file names and sort them to prevent
-           non-determinism. See Debian bug #488562. */
+	/* FIXME: Read file names and sort them to prevent
+	   non-determinism. See Debian bug #488562. */
 	if (php_sys_stat(fn, &st) == 0 && S_ISDIR(st.st_mode)) {
 		int mflen;
 		char mfn[MAXPATHLEN];
@@ -1206,21 +1213,21 @@ apprentice_load(struct magic_set *ms, const char *fn, int action)
 		goto out;
 
 	for (j = 0; j < MAGIC_SETS; j++) {
-	/* Set types of tests */
+		/* Set types of tests */
 		for (i = 0; i < mentrycount[j]; ) {
 			if (mentry[j][i].mp->cont_level != 0) {
-			i++;
-			continue;
-		}
-			i = set_text_binary(ms, mentry[j], mentrycount[j], i);
+				i++;
+				continue;
 			}
+			i = set_text_binary(ms, mentry[j], mentrycount[j], i);
+		}
 		qsort(mentry[j], mentrycount[j], sizeof(*mentry[j]),
 		    apprentice_sort);
 
-	/*
+		/*
 		 * Make sure that any level 0 "default" line is last
 		 * (if one exists).
-	 */
+		 */
 		set_last_default(ms, mentry[j], mentrycount[j]);
 
 		/* coalesce per file arrays into a single one */
