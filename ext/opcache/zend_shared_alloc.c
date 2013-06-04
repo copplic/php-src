@@ -119,7 +119,7 @@ static void copy_shared_segments(void *to, void *from, int count, int size)
 	}
 }
 
-static int zend_shared_alloc_try(const zend_shared_memory_handler_entry *he, int requested_size, zend_shared_segment ***shared_segments_p, int *shared_segments_count, char **error_in)
+static int zend_shared_alloc_try(const zend_shared_memory_handler_entry *he, size_t requested_size, zend_shared_segment ***shared_segments_p, int *shared_segments_count, char **error_in)
 {
 	int res;
 	g_shared_alloc_handler = he->handler;
@@ -137,7 +137,7 @@ static int zend_shared_alloc_try(const zend_shared_memory_handler_entry *he, int
 		int i;
 		/* cleanup */
 		for (i = 0; i < *shared_segments_count; i++) {
-			if ((*shared_segments_p)[i]->p && (int)(*shared_segments_p)[i]->p != -1) {
+			if ((*shared_segments_p)[i]->p && (*shared_segments_p)[i]->p != (void *)-1) {
 				S_H(detach_segment)((*shared_segments_p)[i]);
 			}
 		}
@@ -148,7 +148,7 @@ static int zend_shared_alloc_try(const zend_shared_memory_handler_entry *he, int
 	return ALLOC_FAILURE;
 }
 
-int zend_shared_alloc_startup(int requested_size)
+int zend_shared_alloc_startup(size_t requested_size)
 {
 	zend_shared_segment **tmp_shared_segments;
 	size_t shared_segments_array_size;

@@ -288,7 +288,7 @@ ZEND_API zend_bool zend_is_compiling(TSRMLS_D) /* {{{ */
 
 static zend_uint get_temporary_variable(zend_op_array *op_array) /* {{{ */
 {
-	return (zend_uint)EX_TMP_VAR_NUM(0, (op_array->T)++);
+	return (zend_uint)(zend_uintptr_t)EX_TMP_VAR_NUM(0, (op_array->T)++);
 }
 /* }}} */
 
@@ -5687,7 +5687,7 @@ void zend_do_shell_exec(znode *result, const znode *cmd TSRMLS_DC) /* {{{ */
 			break;
 	}
 	SET_NODE(opline->op1, cmd);
-	opline->op2.opline_num = 0;
+	opline->op2.opline_num = 1;
 	opline->extended_value = ZEND_DO_FCALL;
 	SET_UNUSED(opline->op2);
 
@@ -5702,6 +5702,7 @@ void zend_do_shell_exec(znode *result, const znode *cmd TSRMLS_DC) /* {{{ */
 	GET_CACHE_SLOT(opline->op1.constant);
 	opline->extended_value = 1;
 	SET_UNUSED(opline->op2);
+	opline->op2.num = CG(context).nested_calls;
 	GET_NODE(result, opline->result);
 
 	if (CG(context).nested_calls + 1 > CG(active_op_array)->nested_calls) {
